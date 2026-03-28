@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew :semanticdb-kotlinc:shadowJar --no-daemon -Pversion=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to Nexus
-        run: ./gradlew :semanticdb-kotlinc:publishShadowPublicationToNexusRepository --no-daemon -Pversion=${{ steps.version.outputs.VERSION }} -x initializeSonatypeStagingRepository
+        run: ./gradlew :semanticdb-kotlinc:publishShadowPublicationToNexusRepository --no-daemon -Pversion=${{ steps.version.outputs.VERSION }} -x initializeSonatypeStagingRepository -x closeSonatypeStagingRepository -x releaseSonatypeStagingRepository
         env:
           NEXUS_URL: ${{ secrets.NEXUS_URL }}
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
