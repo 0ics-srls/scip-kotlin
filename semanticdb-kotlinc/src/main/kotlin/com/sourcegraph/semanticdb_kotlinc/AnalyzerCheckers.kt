@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirBasicExpressionC
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirClassReferenceExpressionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirQualifiedAccessExpressionChecker
 import org.jetbrains.kotlin.fir.analysis.checkers.expression.FirTypeOperatorCallChecker
-import org.jetbrains.kotlin.fir.analysis.checkers.getContainingClassSymbol
+import org.jetbrains.kotlin.fir.resolve.getContainingClassSymbol
 import org.jetbrains.kotlin.fir.analysis.checkers.toClassLikeSymbol
 import org.jetbrains.kotlin.fir.analysis.extensions.FirAdditionalCheckersExtension
 import org.jetbrains.kotlin.fir.declarations.*
@@ -178,7 +178,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirClassLikeDeclaration) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             val objectKeyword = if (declaration is FirAnonymousObject) {
                 source
@@ -207,7 +207,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirConstructor) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
 
             if (declaration.isPrimary) {
@@ -240,9 +240,9 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
     private class SemanticSimpleFunctionChecker : FirSimpleFunctionChecker(MppCheckerKind.Common) {
         @OptIn(ExperimentalContracts::class)
         context(context: CheckerContext, reporter: DiagnosticReporter)
-        override fun check(declaration: FirSimpleFunction) {
+        override fun check(declaration: FirNamedFunction) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitNamedFunction(declaration, getIdentifier(source), context)
 
@@ -260,7 +260,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirAnonymousFunction) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitNamedFunction(declaration, source, context)
         }
@@ -271,7 +271,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirProperty) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitProperty(declaration, getIdentifier(source), context)
 
@@ -288,7 +288,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirValueParameter) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitParameter(declaration, getIdentifier(source), context)
 
@@ -305,7 +305,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirTypeParameter) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitTypeParameter(declaration, getIdentifier(source), context)
         }
@@ -316,7 +316,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirTypeAlias) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitTypeAlias(declaration, getIdentifier(source), context)
         }
@@ -328,7 +328,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
         context(context: CheckerContext, reporter: DiagnosticReporter)
         override fun check(declaration: FirPropertyAccessor) {
             val source = declaration.source ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             val identifierSource =
                 if (declaration.isGetter) {
@@ -362,7 +362,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
                 return
             }
 
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
             visitor?.visitSimpleNameExpression(calleeReference, getIdentifier(calleeReference.source ?: source), context)
 
@@ -394,7 +394,7 @@ open class AnalyzerCheckers(session: FirSession) : FirAdditionalCheckersExtensio
             val typeRef = expression.conversionTypeRef
             val source = typeRef.source ?: return
             val classSymbol = expression.conversionTypeRef.toClassLikeSymbol(context.session) ?: return
-            val ktFile = context.containingFile?.sourceFile ?: return
+            val ktFile = context.containingFileSymbol?.sourceFile ?: return
             val visitor = visitors[ktFile]
 
             visitor?.visitClassReference(classSymbol, getIdentifier(expression.conversionTypeRef.source ?: source), context)

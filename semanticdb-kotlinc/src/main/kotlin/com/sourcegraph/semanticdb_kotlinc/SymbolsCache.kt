@@ -4,8 +4,8 @@ import com.sourcegraph.semanticdb_kotlinc.SemanticdbSymbolDescriptor.Kind
 import java.lang.System.err
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
-import org.jetbrains.kotlin.fir.analysis.checkers.declaration.isLocalMember
-import org.jetbrains.kotlin.fir.analysis.checkers.getContainingSymbol
+import org.jetbrains.kotlin.fir.declarations.utils.isLocal
+import org.jetbrains.kotlin.fir.resolve.getContainingSymbol
 import org.jetbrains.kotlin.fir.declarations.DirectDeclarationsAccess
 import org.jetbrains.kotlin.fir.declarations.FirClass
 import org.jetbrains.kotlin.fir.declarations.FirDeclarationOrigin
@@ -91,7 +91,7 @@ class GlobalSymbolsCache(testing: Boolean = false) : Iterable<Symbol> {
     ): Symbol {
         if (skip(symbol)) return Symbol.NONE
 
-        if (symbol.fir.isLocalMember) return locals + symbol
+        if (symbol.fir.isLocal) return locals + symbol
 
         val owner = getParentSymbol(symbol, locals)
 
@@ -181,7 +181,7 @@ class GlobalSymbolsCache(testing: Boolean = false) : Iterable<Symbol> {
 
         val siblings =
             when (val containingSymbol = symbol.getContainingSymbol(session)) {
-                is FirClassSymbol ->
+                is FirClassSymbol<*> ->
                     (containingSymbol.fir as FirClass).declarations.map { it.symbol }
                 is FirFileSymbol -> containingSymbol.fir.declarations.map { it.symbol }
                 null ->

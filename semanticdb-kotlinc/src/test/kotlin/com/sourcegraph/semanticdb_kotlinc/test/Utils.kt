@@ -199,5 +199,8 @@ fun semanticdbVisitorAnalyzer(
 
         override val supportsK2: Boolean
             get() = true
+
+        override val pluginId: String
+            get() = "com.sourcegraph.semanticdb-kotlinc.test"
     }
 }

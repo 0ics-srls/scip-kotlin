@@ -72,7 +72,7 @@ class SemanticdbTextDocumentBuilder(
     ): Semanticdb.SymbolInformation {
         val supers =
             when (firBasedSymbol) {
-                is FirClassSymbol ->
+                is FirClassSymbol<*> ->
                     firBasedSymbol
                         .resolvedSuperTypeRefs
                         .filter { it !is FirImplicitAnyTypeRef }
@@ -80,7 +80,7 @@ class SemanticdbTextDocumentBuilder(
                         .filterNotNull()
                         .flatMap { cache[it] }
                 is FirFunctionSymbol<*> ->
-                    firBasedSymbol.directOverriddenSymbolsSafe(context).flatMap { cache[it] }
+                    with(context) { firBasedSymbol.directOverriddenSymbolsSafe() }.flatMap { cache[it] }
                 else -> emptyList<Symbol>().asIterable()
             }
         return SymbolInformation {
@@ -202,10 +202,10 @@ class SemanticdbTextDocumentBuilder(
         @OptIn(SymbolInternals::class)
         private fun displayName(firBasedSymbol: FirBasedSymbol<*>): String =
             when (firBasedSymbol) {
-                is FirClassSymbol -> firBasedSymbol.classId.shortClassName.asString()
+                is FirClassSymbol<*> -> firBasedSymbol.classId.shortClassName.asString()
                 is FirPropertyAccessorSymbol -> firBasedSymbol.fir.propertySymbol.name.asString()
-                is FirFunctionSymbol -> firBasedSymbol.callableId.callableName.asString()
-                is FirPropertySymbol -> firBasedSymbol.callableId.callableName.asString()
+                is FirFunctionSymbol -> firBasedSymbol.callableId?.callableName?.asString() ?: firBasedSymbol.name.asString()
+                is FirPropertySymbol -> firBasedSymbol.callableId?.callableName?.asString() ?: firBasedSymbol.name.asString()
                 is FirVariableSymbol -> firBasedSymbol.name.asString()
                 else -> firBasedSymbol.toString()
             }
