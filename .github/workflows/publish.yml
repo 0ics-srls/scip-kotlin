@@ -22,11 +22,15 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
       - name: Build shadow jar
-        run: ./gradlew :semanticdb-kotlinc:shadowJar --no-daemon
+        run: ./gradlew :semanticdb-kotlinc:shadowJar --no-daemon -Pversion=${{ steps.version.outputs.VERSION }}
 
       - name: Publish to Nexus
-        run: ./gradlew :semanticdb-kotlinc:publish --no-daemon
+        run: ./gradlew :semanticdb-kotlinc:publish --no-daemon -Pversion=${{ steps.version.outputs.VERSION }}
         env:
           NEXUS_URL: ${{ secrets.NEXUS_URL }}
           NEXUS_USER: ${{ secrets.NEXUS_USER }}
