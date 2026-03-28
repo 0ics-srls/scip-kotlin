@@ -92,7 +92,7 @@ class GlobalSymbolsCache(testing: Boolean = false) : Iterable<Symbol> {
     ): Symbol {
         if (skip(symbol)) return Symbol.NONE
 
-        if ((symbol.fir as? FirMemberDeclaration)?.isLocal == true) return locals + symbol
+        if (symbol is FirCallableSymbol && symbol.callableId == null) return locals + symbol
 
         val owner = getParentSymbol(symbol, locals)
 
