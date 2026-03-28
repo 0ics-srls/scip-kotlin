@@ -144,16 +144,13 @@ publishing {
     repositories {
         mavenLocal()
         maven {
-            name = "sonatype"
-            url =
-                if (!(version as String).endsWith("-SNAPSHOT"))
-                    URI("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
-                else
-                    URI("https://central.sonatype.com/repository/maven-snapshots/")
+            name = "nexus"
+            url = URI(System.getenv("NEXUS_URL") ?: "https://nexus.0ics.ai/repository/maven-releases/")
             credentials {
-                username = System.getenv("SONATYPE_USERNAME")
-                password = System.getenv("SONATYPE_PASSWORD")
+                username = System.getenv("NEXUS_USER") ?: ""
+                password = System.getenv("NEXUS_PASSWORD") ?: ""
             }
+            isAllowInsecureProtocol = false
         }
     }
 }
@@ -166,7 +163,7 @@ signing {
 }
 
 tasks.withType<Sign>().configureEach {
-    onlyIf { !(project.version as String).endsWith("SNAPSHOT") }
+    onlyIf { false } // Signing disabled — publishing to private Nexus
 }
 
 tasks.test {
